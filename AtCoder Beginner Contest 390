@@ -1,0 +1,313 @@
+////AtCoder Beginner Contest 390////
+/*
+
+
+///...Problem-A...///
+///AZAD///
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define endl '\n'
+int main(){
+
+
+    ll n=5;
+    vector<ll>v(n);
+    bool ok=false;
+    for(ll i=0;i<n;i++){
+          cin>>v[i];
+    }
+
+    if(is_sorted(v.begin(),v.end())){
+           cout<<"No"<<endl;
+    }else{
+    for(ll i=0;i<n-1;i++){
+          if(v[i]>v[i+1]){
+               swap(v[i],v[i+1]);
+               ok=true;
+               break;
+          }
+    }
+
+    if(ok){
+        if(is_sorted(v.begin(),v.end())){
+               cout<<"Yes"<<endl;
+        }else{
+
+           cout<<"No"<<endl;
+
+        }
+    }
+
+
+}
+
+}
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+///B///
+
+///AZAD///
+#include<bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define endl '\n'
+
+bool IsGeometricProgression(const vector<double>&v){
+
+     int n=v.size();
+     if(n<2)return false;
+     double r=v[1]/v[0];
+
+     for(int i=1;i<n-1;i++){
+          if(v[i+1]/v[i]!=r){
+              return false;
+          }
+     }
+
+     return true;
+
+
+}
+
+
+bool IsGeometricProgress(const vector<ll>&v){
+
+     int n=v.size();
+     if(n<2)return false;
+     if(v[0]==0){
+          return false;
+     }
+
+     ll aa=v[1];
+     ll bb=v[0];
+
+     for(ll i=1;i<n-1;i++){
+          ll second=v[i+1];
+          ll first=v[i];
+
+          if(second*bb!=first*aa){
+              return false;
+          }
+     }
+
+     return true;
+
+}
+int main(){
+
+
+    ll n;cin>>n;
+    vector<ll>v(n);
+
+    for(ll i=0;i<n;i++){
+        cin>>v[i];
+    }
+
+    if(IsGeometricProgress(v)){
+          cout<<"Yes"<<endl;
+    }else{
+
+       cout<<"No"<<endl;
+
+    }
+
+
+
+}
+
+
+*/
+
+
+
+
+
+
+
+
+///C///
+
+
+///AZAD///
+#include <bits/stdc++.h>
+using namespace std;
+
+int main() {
+    int H, W;
+    cin >> H >> W;
+
+    vector<string> grid(H);
+    for (int i = 0; i < H; ++i) {
+        cin >> grid[i];
+    }
+
+
+    int top = H, bottom = -1, left = W, right = -1;
+
+
+    for (int i = 0; i < H; ++i) {
+        for (int j = 0; j < W; ++j) {
+            if (grid[i][j] == '#') {
+                top = min(top, i);
+                bottom = max(bottom, i);
+                left = min(left, j);
+                right = max(right, j);
+            }
+        }
+    }
+
+
+    for (int i = 0; i < H; ++i) {
+        for (int j = 0; j < W; ++j) {
+            if (i >= top && i <= bottom && j >= left && j <= right) {
+
+                if (grid[i][j] == '.') {
+                    cout << "No" << endl;
+                    return 0;
+                }
+            } else {
+
+                if (grid[i][j] == '#') {
+                    cout << "No" << endl;
+                    return 0;
+                }
+            }
+        }
+    }
+
+
+    cout << "Yes" << endl;
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+///..E...///
+#include <bits/stdc++.h>
+using namespace std;
+
+const int INF = 1e9;
+
+vector<vector<pair<int, int>>> groups(3);
+vector<int> sumA(3, 0);
+vector<vector<int>> dp(3, vector<int>(5001, -INF));
+int X;
+
+void build_dp(int group) {
+    if (groups[group].empty()) return;
+
+    dp[group][0] = 0;
+    for (auto& food : groups[group]) {
+        int A = food.first;
+        int C = food.second;
+        for (int c = X; c >= C; --c) {
+            if (dp[group][c - C] != -INF) {
+                dp[group][c] = max(dp[group][c], dp[group][c - C] + A);
+            }
+        }
+    }
+
+    // Compute the prefix maximum for each calorie count.
+    for (int c = 1; c <= X; ++c) {
+        dp[group][c] = max(dp[group][c], dp[group][c - 1]);
+    }
+}
+
+bool check(int m) {
+    int total = 0;
+    for (int i = 0; i < 3; ++i) {
+        if (groups[i].empty()) {
+            if (m > 0) return false;
+            continue;
+        }
+        if (sumA[i] < m) return false;
+
+        int min_c = -1;
+        for (int c = 0; c <= X; ++c) {
+            if (dp[i][c] >= m) {
+                min_c = c;
+                break;
+            }
+        }
+        if (min_c == -1) return false;
+        total += min_c;
+        if (total > X) return false;
+    }
+    return total <= X;
+}
+
+int main() {
+    int N;
+    cin >> N >> X;
+
+    for (int i = 0; i < N; ++i) {
+        int V, A, C;
+        cin >> V >> A >> C;
+        V--; // convert to 0-based index.
+        groups[V].emplace_back(A, C);
+        sumA[V] += A;
+    }
+
+    for (int i = 0; i < 3; ++i) {
+        build_dp(i);
+    }
+
+    int low = 0;
+    int high = min({sumA[0], sumA[1], sumA[2]});
+    int ans = 0;
+
+    while (low <= high) {
+        int mid = (low + high) / 2;
+        if (check(mid)) {
+            ans = mid;
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+
+    cout << ans << endl;
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
